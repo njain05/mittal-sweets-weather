@@ -131,8 +131,13 @@ export default async function handler(req, res) {
   try {
     sites = await fetchForecast(wanted);
   } catch (err) {
-    return res.status(502).json({ error: "Could not reach the weather service" });
+    return res.status(502).json({ error: err.message });
   }
+
+  // Forecasts move by the hour, not the second. Letting the edge serve a
+  // five-minute-old copy makes the page fast and keeps one slow upstream call
+  // from being every visitor's problem.
+  res.setHeader("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
 
   const shops = sites.map((s, idx) => {
     const a = assess(s, {});

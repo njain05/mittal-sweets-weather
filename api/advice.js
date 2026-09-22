@@ -29,6 +29,11 @@ export default async function handler(req, res) {
     return res.status(502).json({ error: err.message });
   }
 
+  // A what-if on stock must not be served from a shared cache.
+  if (!Object.keys(stockOverride).length) {
+    res.setHeader("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
+  }
+
   const results = sites.map(s => assess(s, stockOverride));
 
   if (slug) {

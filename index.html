@@ -134,6 +134,10 @@
   .quiet { color: var(--dim); }
   .loading { color: var(--dim); padding: 24px 0; }
   .oops { color: var(--sticker); }
+  button.retry {
+    font: inherit; color: var(--gold); background: none; border: 0;
+    padding: 0; cursor: pointer; text-decoration: underline;
+  }
 
   @media (prefers-reduced-motion: no-preference) {
     .store, .deal { transition: border-color .15s, color .15s; }
@@ -332,7 +336,26 @@ async function load(slug) {
     drawStores();
     drawShop();
   } catch (err) {
-    host.innerHTML = `<p class="loading oops">We couldn’t open that shop: ${esc(err.message)}. Try another city above.</p>`;
+    host.innerHTML = `<p class="loading oops">We couldn’t open the ${esc(slug)} shop: ${esc(err.message)}.
+      Try another city above, or
+      <button class="retry" type="button" onclick="location.reload()">try again</button>.</p>`;
+  }
+}
+
+// The cities we have shops in. Kept here so a failed all-stores call still
+// leaves something to click — one store loads fine even when the summary
+// call doesn't.
+const CITIES = ["ludhiana", "delhi", "dubai", "singapore", "london", "toronto", "melbourne"];
+
+function drawCityList() {
+  const nav = $("#stores");
+  nav.textContent = "";
+  for (const slug of CITIES) {
+    const b = el("button", "store");
+    b.type = "button";
+    b.textContent = slug[0].toUpperCase() + slug.slice(1);
+    b.onclick = () => load(slug);
+    nav.appendChild(b);
   }
 }
 
@@ -340,13 +363,15 @@ async function start() {
   try {
     const res = await fetch("/api/offers");
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "could not load stores");
+    if (!res.ok) throw new Error(data.error || "we couldn’t load the shops");
     stores = data.stores;
     drawStores();
     if (stores.length) load(stores[0].store.slug);
   } catch (err) {
-    $("#stores").innerHTML =
-      `<span class="loading oops">We couldn’t reach our shops just now. Reload to try again.</span>`;
+    drawCityList();
+    $("#shop").innerHTML =
+      `<p class="loading oops">${esc(err.message)}. Pick a city above, or
+       <button class="retry" type="button" onclick="location.reload()">try again</button>.</p>`;
   }
 }
 start();
