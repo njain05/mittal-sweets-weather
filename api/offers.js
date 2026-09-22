@@ -6,7 +6,7 @@
 // deadline — both true, both useful. They are never told an item is close to
 // the end of its window; that is the shop's problem, not a selling point.
 
-import { BRANCHES, branchBySlug } from "../lib/catalog.js";
+import { BRANCHES, branchBySlug, CLOSE_HOUR } from "../lib/catalog.js";
 import { fetchForecast } from "../lib/openmeteo.js";
 import { assess } from "../lib/assess.js";
 import { round } from "../lib/model.js";
@@ -14,6 +14,25 @@ import { round } from "../lib/model.js";
 // Shops post round numbers. Always round DOWN to a 5% step — rounding up would
 // cross the ceiling the markdown maths just worked out.
 const postable = pct => Math.floor(pct / 5) * 5;
+
+// An item can turn at 4am, but nobody can come and buy it then. Show the
+// last hour a shopper could actually walk in — today's closing time if the
+// window runs past it. The markdown itself still stands: stock that dies
+// overnight has to move before the doors shut.
+function shownDeadline(safeUntilIso, nowIso) {
+  if (!safeUntilIso) return { until: `${CLOSE_HOUR}:00`, at_close: true };
+
+  const safeHM = safeUntilIso.slice(11, 16);
+  const safeDay = safeUntilIso.slice(0, 10);
+  const nowDay = nowIso.slice(0, 10);
+  const closeHM = String(CLOSE_HOUR).padStart(2, "0") + ":00";
+
+  // Past today's closing time, either by clock or by rolling into tomorrow.
+  if (safeDay > nowDay || safeHM >= closeHM) {
+    return { until: closeHM, at_close: true };
+  }
+  return { until: safeHM, at_close: false };
+}
 
 // Why this is on offer, said in a way that is true and sells.
 // Never "about to spoil".
@@ -59,7 +78,7 @@ function storefront(a, withCurve) {
       was: i.local_price,
       now: round(i.local_price * (1 - off / 100), 2),
       percent_off: off,
-      until: i.safe_until ? i.safe_until.slice(11, 16) : null,
+      ...shownDeadline(i.safe_until, now.local_time),
       pitch: pitch(i, now.feels_like)
     });
   }

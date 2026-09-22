@@ -265,7 +265,9 @@ function drawShop() {
       const d = el("div", "deal");
       d.innerHTML = `
         <div class="what">${esc(o.name)}</div>
-        <div class="why">${esc(o.pitch)}${o.until ? ` — until ${esc(o.until)}` : ""}</div>
+        <div class="why">${esc(o.pitch)}${o.until
+          ? ` — ${o.at_close ? `until we close at ${esc(o.until)}` : `until ${esc(o.until)}`}`
+          : ""}</div>
         <div class="prices">
           <div class="off">${o.percent_off}% off</div>
           <div class="pair">

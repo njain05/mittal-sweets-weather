@@ -2,8 +2,9 @@
 
 A customer-facing shopfront for a sweet, snack and drink chain with seven
 branches across five timezones. Rates move through the day with the weather at
-each branch, and the site shows a shopper what is cheaper right now and until
-when.
+each branch, and the site shows a shopper what is cheaper right now and how long
+it holds — never past closing time, since a price that expires at 4am is no use
+to anyone.
 
 Built for the bootcamp's "pick one feature" brief — the weather option, using
 [Open-Meteo](https://open-meteo.com/), which needs no API key.
