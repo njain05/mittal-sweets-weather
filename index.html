@@ -189,7 +189,7 @@ function drawStores() {
     b.type = "button";
     b.setAttribute("aria-current", String(shop?.store.slug === s.store.slug));
     b.innerHTML = `${esc(s.store.city)} <span class="deg">${Math.round(s.today.feels_like)}°</span>`;
-    b.onclick = () => load(s.store.slug);
+    b.onclick = () => show(s.store.slug);
     nav.appendChild(b);
   }
 }
@@ -325,6 +325,17 @@ function drawShop() {
 }
 
 /* ---------- data ---------- */
+
+// Switching cities touches no network: the first call brought every store
+// down complete. Only a city we somehow don't hold falls back to fetching.
+function show(slug) {
+  const found = stores.find(s => s.store.slug === slug);
+  if (!found) return load(slug);
+  shop = found;
+  drawStores();
+  drawShop();
+}
+
 async function load(slug) {
   const host = $("#shop");
   host.innerHTML = `<p class="loading">Opening the ${esc(slug)} shop…</p>`;
@@ -333,6 +344,7 @@ async function load(slug) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "could not load the shop");
     shop = data;
+    if (!stores.some(s => s.store.slug === data.store.slug)) stores.push(data);
     drawStores();
     drawShop();
   } catch (err) {
@@ -365,8 +377,8 @@ async function start() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "we couldn’t load the shops");
     stores = data.stores;
-    drawStores();
-    if (stores.length) load(stores[0].store.slug);
+    if (stores.length) show(stores[0].store.slug);
+    else drawStores();
   } catch (err) {
     drawCityList();
     $("#shop").innerHTML =

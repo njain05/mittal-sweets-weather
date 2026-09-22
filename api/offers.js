@@ -139,15 +139,18 @@ export default async function handler(req, res) {
   // from being every visitor's problem.
   res.setHeader("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
 
-  const shops = sites.map((s, idx) => {
+  const shops = sites.map(s => {
     const a = assess(s, {});
     a.hours = s.hours;
-    return storefront(a, Boolean(slug));
+    return storefront(a, true);
   });
 
   if (slug) return res.status(200).json(shops[0]);
 
-  res.status(200).json({
-    stores: shops.map(({ menu, hours, ...rest }) => rest)
-  });
+  // Every store, complete — rates, offers and forecast curve. Open-Meteo takes
+  // all seven coordinates in a single request, so the page can load this once
+  // and switch cities with no further calls. Asking per click meant seven
+  // upstream calls for seven clicks, and a burst of those got throttled into
+  // 502s.
+  res.status(200).json({ stores: shops });
 }
