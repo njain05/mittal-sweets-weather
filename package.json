@@ -1,0 +1,5 @@
+{
+  "name": "weather-api",
+  "private": true,
+  "type": "module"
+}

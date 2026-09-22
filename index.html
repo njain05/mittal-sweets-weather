@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mittal Sweets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Archivo+Narrow:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --page:     #123a2b;   /* bottle green, the signboard ground */
+    --board:    #174432;   /* the board panel, a shade up */
+    --edge:     #27573f;
+    --gold:     #e3b23c;   /* painted rates */
+    --cream:    #f2efe4;   /* item names, and today's sticker price */
+    --dim:      #a9bfaf;   /* struck-through rates, quiet text */
+    --sticker:  #ff9472;   /* the paper slapped over a changed rate */
+
+    --narrow: "Archivo Narrow", "Arial Narrow", system-ui, sans-serif;
+    --body:   "Archivo", system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--page); color: var(--cream);
+    font: 16px/1.55 var(--body);
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 36px 18px 88px; }
+
+  a { color: var(--gold); }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 3px; }
+
+  /* ---------- masthead ---------- */
+  .shopname {
+    font-family: var(--narrow); font-weight: 700;
+    font-size: clamp(38px, 11vw, 62px); line-height: .92;
+    letter-spacing: .01em; margin: 0; color: var(--cream);
+  }
+  .trade {
+    font-family: var(--narrow); font-weight: 400; font-size: clamp(14px, 3.4vw, 17px);
+    letter-spacing: .26em; color: var(--gold); margin: 6px 0 0;
+  }
+
+  /* ---------- store tabs ---------- */
+  .stores {
+    display: flex; gap: 6px; overflow-x: auto; margin: 26px -18px 0;
+    padding: 0 18px 4px; scrollbar-width: none;
+  }
+  .stores::-webkit-scrollbar { display: none; }
+  .store {
+    flex: none; font: 600 14px/1 var(--narrow); letter-spacing: .04em;
+    padding: 9px 14px; border-radius: 999px; cursor: pointer;
+    background: transparent; color: var(--dim);
+    border: 1px solid var(--edge);
+  }
+  .store:hover { color: var(--cream); border-color: var(--gold); }
+  .store[aria-current="true"] {
+    background: var(--gold); border-color: var(--gold); color: var(--page);
+  }
+  .store .deg { opacity: .75; font-weight: 400; }
+  .store[aria-current="true"] .deg { opacity: .85; }
+
+  /* ---------- weather line ---------- */
+  .today {
+    margin: 30px 0 0; font-family: var(--narrow); font-weight: 600;
+    font-size: clamp(21px, 5.4vw, 29px); line-height: 1.22; letter-spacing: .005em;
+    max-width: 30ch;
+  }
+  .cond { margin: 8px 0 0; color: var(--dim); font-size: 14.5px; }
+
+  /* ---------- the board ---------- */
+  .board {
+    margin-top: 22px; background: var(--board);
+    border: 1px solid var(--edge); border-radius: 4px;
+    padding: 8px 18px 10px;
+  }
+  .group {
+    font-family: var(--narrow); font-weight: 700; font-size: 15px;
+    letter-spacing: .14em; color: var(--gold);
+    margin: 20px 0 6px; padding-bottom: 5px; border-bottom: 1px solid var(--edge);
+  }
+  .group:first-of-type { margin-top: 12px; }
+
+  .line { display: flex; align-items: baseline; gap: 8px; padding: 7px 0; }
+  .item { font-family: var(--narrow); font-size: 18.5px; font-weight: 400; }
+  .unit { font-size: 12.5px; color: var(--dim); font-family: var(--body); }
+  .leader { flex: 1; border-bottom: 1.5px dotted #3d6b51; transform: translateY(-4px); min-width: 12px; }
+  .rate {
+    font-family: var(--narrow); font-weight: 600; font-size: 19px;
+    color: var(--gold); font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .rate.was {
+    color: var(--dim); text-decoration: line-through;
+    text-decoration-thickness: 1.5px; font-weight: 400; margin-right: 2px;
+  }
+  .rate.now { color: var(--cream); font-weight: 700; }
+  .pick {
+    font: 500 11px/1 var(--body); color: var(--page); background: var(--gold);
+    padding: 3px 7px; border-radius: 3px; white-space: nowrap;
+  }
+
+  /* ---------- offers ---------- */
+  .deals { display: grid; gap: 10px; margin-top: 20px; }
+  .deal {
+    display: grid; grid-template-columns: 1fr auto; gap: 4px 14px;
+    align-items: center; background: var(--board);
+    border: 1px solid var(--edge); border-left: 3px solid var(--sticker);
+    border-radius: 4px; padding: 14px 16px;
+  }
+  .deal .what { font-family: var(--narrow); font-size: 21px; font-weight: 600; }
+  .deal .why { grid-column: 1; color: var(--dim); font-size: 13.5px; }
+  .deal .prices { grid-row: 1 / 3; grid-column: 2; text-align: right; }
+  .deal .off {
+    display: inline-block; background: var(--sticker); color: var(--page);
+    font: 700 12px/1 var(--body); padding: 4px 7px; border-radius: 3px;
+    margin-bottom: 5px;
+  }
+  .deal .pair { font-family: var(--narrow); font-size: 20px; white-space: nowrap; }
+
+  h2.sec {
+    font-family: var(--narrow); font-weight: 700; font-size: 20px;
+    letter-spacing: .02em; margin: 40px 0 2px;
+  }
+  p.secnote { color: var(--dim); font-size: 14px; margin: 0 0 14px; }
+
+  /* ---------- when to come ---------- */
+  .curve { background: var(--board); border: 1px solid var(--edge); border-radius: 4px; padding: 16px 14px 8px; }
+  .curve svg { display: block; width: 100%; }
+  .curvenote { color: var(--dim); font-size: 13.5px; margin: 6px 2px 4px; }
+
+  .foot { margin-top: 46px; color: var(--dim); font-size: 13px; line-height: 1.6; }
+  .foot a { color: var(--dim); text-decoration-color: var(--edge); }
+  .quiet { color: var(--dim); }
+  .loading { color: var(--dim); padding: 24px 0; }
+  .oops { color: var(--sticker); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .store, .deal { transition: border-color .15s, color .15s; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1 class="shopname">Mittal Sweets</h1>
+    <p class="trade">Mithai, snacks and chai</p>
+  </header>
+
+  <nav class="stores" id="stores" aria-label="Choose a store">
+    <span class="loading">Finding your stores…</span>
+  </nav>
+
+  <div id="shop"></div>
+
+  <footer class="foot">
+    <p>
+      Rates change through the day with the weather at each store. A reduced rate
+      holds until the time shown beside it.
+    </p>
+    <p class="quiet">
+      Built on <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
+      forecasts. Live data at <a href="/api/offers" target="_blank">/api/offers</a>.
+    </p>
+  </footer>
+</main>
+
+<script type="module">
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
+
+let stores = [];
+let shop = null;
+
+const money = (cur, n) =>
+  cur + (Number.isInteger(n) ? n.toLocaleString() : n.toFixed(2));
+
+/* ---------- store tabs ---------- */
+function drawStores() {
+  const nav = $("#stores");
+  nav.textContent = "";
+  for (const s of stores) {
+    const b = el("button", "store");
+    b.type = "button";
+    b.setAttribute("aria-current", String(shop?.store.slug === s.store.slug));
+    b.innerHTML = `${esc(s.store.city)} <span class="deg">${Math.round(s.today.feels_like)}°</span>`;
+    b.onclick = () => load(s.store.slug);
+    nav.appendChild(b);
+  }
+}
+
+/* ---------- when to come ---------- */
+function drawCurve(hours, host, note) {
+  const W = Math.max(280, host.clientWidth || 600), H = 116;
+  const pad = { t: 16, r: 8, b: 22, l: 8 };
+  const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+
+  const t = hours.map(h => h.feels);
+  const lo = Math.min(...t), hi = Math.max(...t);
+  const span = Math.max(1, hi - lo);
+  const x = i => pad.l + (iw * i) / Math.max(1, hours.length - 1);
+  const y = v => pad.t + ih - (ih * (v - lo)) / span;
+
+  const path = hours.map((h, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(h.feels).toFixed(1)}`).join("");
+  const fill = `${path}L${x(hours.length - 1).toFixed(1)},${pad.t + ih}L${pad.l},${pad.t + ih}Z`;
+
+  // Someone deciding whether to walk over now cares when the heat eases off,
+  // not when the overnight low lands. Take the first hour in the next twelve
+  // that is meaningfully cooler than right now, and only fall back to the
+  // low point if the day never breaks.
+  const nowFeels = t[0];
+  let markIdx = t.findIndex((v, i) => i > 0 && i <= 12 && v <= nowFeels - 3);
+  const isRelief = markIdx > 0;
+  if (!isRelief) markIdx = t.indexOf(lo);
+  const labels = hours.map((h, i) => i % 6 === 0
+    ? `<text x="${x(i).toFixed(1)}" y="${H - 6}" font-size="11" fill="#a9bfaf" text-anchor="${i === 0 ? "start" : "middle"}">${h.time.slice(11, 16)}</text>`
+    : "").join("");
+
+  host.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img"
+         aria-label="How hot it feels over the next ${hours.length} hours at this store">
+      <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0" stop-color="#e3b23c" stop-opacity=".22"/>
+        <stop offset="1" stop-color="#e3b23c" stop-opacity="0"/>
+      </linearGradient></defs>
+      <path d="${fill}" fill="url(#g)"/>
+      <path d="${path}" fill="none" stroke="#f2efe4" stroke-width="2"
+            stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="${x(markIdx).toFixed(1)}" cy="${y(t[markIdx]).toFixed(1)}" r="4.5"
+              fill="#e3b23c" stroke="#174432" stroke-width="2"/>
+      ${labels}
+    </svg>`;
+
+  if (note) {
+    const at = hours[markIdx].time.slice(11, 16);
+    note.textContent = isRelief
+      ? `Eases off to ${Math.round(t[markIdx])}\u00b0 around ${at}.`
+      : `Coolest at ${at}, ${Math.round(t[markIdx])}\u00b0.`;
+  }
+}
+
+/* ---------- the shop ---------- */
+function drawShop() {
+  const host = $("#shop");
+  host.textContent = "";
+  if (!shop) return;
+
+  const cur = shop.store.currency;
+
+  const t = el("p", "today", esc(shop.suggestion));
+  host.appendChild(t);
+  host.appendChild(el("p", "cond",
+    `${esc(shop.today.condition)}, ${shop.today.temperature}°C and ${shop.today.humidity}% humidity at ${shop.today.local_time} in ${esc(shop.store.city)}.`));
+
+  // offers first — it's what a shopper came for
+  if (shop.offers.length) {
+    host.appendChild(el("h2", "sec", "Cheaper today"));
+    host.appendChild(el("p", "secnote",
+      shop.offers.length === 1
+        ? "One item is reduced until the time shown."
+        : `${shop.offers.length} items are reduced until the times shown.`));
+    const wrap = el("div", "deals");
+    for (const o of shop.offers) {
+      const d = el("div", "deal");
+      d.innerHTML = `
+        <div class="what">${esc(o.name)}</div>
+        <div class="why">${esc(o.pitch)}${o.until ? ` — until ${esc(o.until)}` : ""}</div>
+        <div class="prices">
+          <div class="off">${o.percent_off}% off</div>
+          <div class="pair">
+            <span class="rate was">${money(cur, o.was)}</span>
+            <span class="rate now">${money(cur, o.now)}</span>
+          </div>
+        </div>`;
+      wrap.appendChild(d);
+    }
+    host.appendChild(wrap);
+  }
+
+  // the board
+  host.appendChild(el("h2", "sec", "Today’s rates"));
+  host.appendChild(el("p", "secnote", `Every rate at our ${esc(shop.store.city)} shop.`));
+
+  const board = el("div", "board");
+  const reduced = new Map(shop.offers.map(o => [o.id, o]));
+  for (const group of ["Mithai", "Snacks", "Drinks"]) {
+    const rows = shop.menu.filter(m => m.category === group);
+    if (!rows.length) continue;
+    board.appendChild(el("div", "group", group.toUpperCase()));
+    for (const m of rows) {
+      const o = reduced.get(m.id);
+      const line = el("div", "line");
+      line.innerHTML = `
+        <span class="item">${esc(m.name)}</span>
+        <span class="unit">per ${esc(m.unit)}</span>
+        ${m.good_today && !o ? `<span class="pick">good today</span>` : ""}
+        <span class="leader"></span>
+        ${o
+          ? `<span class="rate was">${money(cur, m.price)}</span><span class="rate now">${money(cur, o.now)}</span>`
+          : `<span class="rate">${money(cur, m.price)}</span>`}`;
+      board.appendChild(line);
+    }
+  }
+  host.appendChild(board);
+
+  // when to come
+  if (shop.hours?.length) {
+    host.appendChild(el("h2", "sec", "When to come"));
+    const note = el("p", "secnote", "How hot it will feel from now on.");
+    host.appendChild(note);
+    const box = el("div", "curve");
+    const inner = el("div");
+    box.appendChild(inner);
+    host.appendChild(box);
+    requestAnimationFrame(() => drawCurve(shop.hours, inner, note));
+    addEventListener("resize", () => shop && drawCurve(shop.hours, inner, note), { passive: true });
+  }
+}
+
+/* ---------- data ---------- */
+async function load(slug) {
+  const host = $("#shop");
+  host.innerHTML = `<p class="loading">Opening the ${esc(slug)} shop…</p>`;
+  try {
+    const res = await fetch("/api/offers?store=" + encodeURIComponent(slug));
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "could not load the shop");
+    shop = data;
+    drawStores();
+    drawShop();
+  } catch (err) {
+    host.innerHTML = `<p class="loading oops">We couldn’t open that shop: ${esc(err.message)}. Try another city above.</p>`;
+  }
+}
+
+async function start() {
+  try {
+    const res = await fetch("/api/offers");
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "could not load stores");
+    stores = data.stores;
+    drawStores();
+    if (stores.length) load(stores[0].store.slug);
+  } catch (err) {
+    $("#stores").innerHTML =
+      `<span class="loading oops">We couldn’t reach our shops just now. Reload to try again.</span>`;
+  }
+}
+start();
+</script>
+</body>
+</html>
